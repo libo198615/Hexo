@@ -17,7 +17,7 @@ tags:
 
 ```
 
-// 在已知n某个方法没有实现的时候，添加该方法
+// 在已知某个方法没有实现的时候，添加该方法
 ```objective-c
 #import <UIKit/UIKit.h>
 

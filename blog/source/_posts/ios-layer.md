@@ -6,7 +6,7 @@ categories:
 tags:
 ---
 
-UIView之所以可以显示是因为他内部的layer图层，在创建UIView对象时，UIView内部会自动创建一个图层，即CALayer。可以通过UIView的layer属性访问。UIView并不具有显示功能，需要依赖于layer，所以设置圆角时我们都用view.layer。`CALayer`并不清楚具体的*响应链*（iOS通过视图层级关系用来传送触摸事件的机制），于是它并不能够响应事件，即使它提供了一些方法来判断是否一个触点在图层的范围之内
+
 
 - *UIView* 继承于 *UIResponder* 和 *NSObject*
 - *CALayer* 继承与 *NSObject*
@@ -17,7 +17,7 @@ wwdc：
 
 ![](https://ws2.sinaimg.cn/large/006tKfTcly1g1psd34gowj30eg03paam.jpg)
 
-> Layers provide infrastructure for your views. Specifically, layers make it easier and more efficient to draw and animate the contents of views and maintain high frame rates while doing so. However, there are many things that layers do not do. Layers do not handle events, draw content, participate in the responder chain, or do many other things
+> Layers provide infrastructure for your views. Specifically, layers make it easier and more efficient to draw and animate the contents of views and maintain high frame rates while doing so. However, there are many things that layers do not do. Layers do not handle events, draw content, participate in the responder chain, or do many other things 
 
 > Layers are often used to provide the backing store for views but can also be used without a view to display content. A layer’s main job is to manage the visual content that you provide but the layer itself has visual attributes that can be set, such as a background color, border, and shadow. In addition to managing visual content, the layer also maintains information about the geometry of its content (such as its position, size, and transform) that is used to present that content onscreen. Modifying the properties of the layer is how you initiate animations on the layer’s content or geometry. A layer object encapsulates the duration and pacing of a layer and its animations by adopting the [`CAMediaTiming`](apple-reference-documentation://hs8_lzhB0N) protocol, which defines the layer’s timing information.
 >
@@ -84,4 +84,3 @@ anchorPoint 的默认值是 (0.5, 0.5), 即 layer 的中央位置. 这时 positi
 
 而 layer 的 frame 实际是通过当前的 bounds 和 position 以及 anchorPoint 共同计算出来的. 当设置 layer 的 frame 时, 相当于同时修改了 layer 的 bounds 和 position.
 
-- 

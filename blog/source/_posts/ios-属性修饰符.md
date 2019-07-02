@@ -52,7 +52,7 @@ tags:
 ```objective-c
 @property (assign) int age;
 相当于
-@property (nonatomic, assign) int age;
+@property (atomic, assign) int age;
 ```
 
 `strong`、`assign`、`weak`、`copy` 中默认 `assign`

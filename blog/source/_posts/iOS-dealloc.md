@@ -11,3 +11,4 @@ tags:
 执行`objc_clear_deallocating`，清空引用计数表并清除弱引用表，将所有`weak`引用指`nil`（这也就是weak变量能安全置空的所在）
 
 `viewController dealloc` 先调用，里面的子`view`的`dealloc`再调用，因为vc强引用子`view`,子view无法先释放。同时带来一个问题，vc可以释放，但是他的子View可能没有释放，造成内存泄漏
+

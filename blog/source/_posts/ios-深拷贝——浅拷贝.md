@@ -15,14 +15,14 @@ tags:
 定义一个NSString类型属性时，为什么用copy不用strong?
 如果用的就是`NSString`，`copy`,`strong`没有区别，区别主要是使用`NSMutableSting`时
 
-|            |             |                                                  |              |                            |      |
-| ---------- | ----------- | ------------------------------------------------ | ------------ | -------------------------- | ---- |
-| 不可变对象 | strong      | 分配内存指针指向原对象                           |              | 值跟随原对象改变而改变     |      |
-| 不可变对象 | copy        | 分配内存指针指向原对象                           | 浅拷贝       | 值跟随原对象改变而改变     |      |
-| 不可变对象 | mutableCopy | 分配内存指针，分配数据内存，指针指向新的数据对象 | 新对象可变   | 值不受原对象值的改变的影响 |      |
-| 可变对象   | strong      | 分配内存指针指向原对象                           |              | 值跟随原对象改变而改变     |      |
-| 可变对象   | copy        | 分配内存指针，分配数据内存，指针指向新的数据对象 | 新对象不可变 | 值不受原对象值的改变的影响 |      |
-| 可变对象   | mutableCopy | 分配内存指针，分配数据内存，指针指向新的数据对象 | 新对象可变   | 值不受原对象值的改变的影响 |      |
+|            |             |                                                  |        |              |      |
+| ---------- | ----------- | ------------------------------------------------ | ------ | ------------ | ---- |
+| 不可变对象 | strong      | 分配内存指针指向原对象                           | 浅拷贝 |              |      |
+| 不可变对象 | copy        | 分配内存指针指向原对象                           | 浅拷贝 |              |      |
+| 不可变对象 | mutableCopy | 分配内存指针，分配数据内存，指针指向新的数据对象 | 深拷贝 | 新对象可变   |      |
+| 可变对象   | strong      | 分配内存指针指向原对象                           | 浅拷贝 |              |      |
+| 可变对象   | copy        | 分配内存指针，分配数据内存，指针指向新的数据对象 | 深拷贝 | 新对象不可变 |      |
+| 可变对象   | mutableCopy | 分配内存指针，分配数据内存，指针指向新的数据对象 | 深拷贝 | 新对象可变   |      |
 
 ##### 以下规则，string array都适用
 
@@ -100,9 +100,9 @@ tempString:0x7fff5f4bc738 strongString:0x7f9990d0c8f0 copyString:0x7f9990d0c8e8
 ```
 
 - NSString
-  strong 开辟内存，分配指针，指向原始数据
-  copy 开辟内存，分配指针，指向原始数据
-  原始数据改变 分配内存，在新内存上设置新值，原数据内存区和strong copy指针不变
+  strong 开辟内存，分配指针，指向原始数据A
+  copy 开辟内存，分配指针，指向原始数据A
+  改变原始数据时，由于原始数据不可变，实际上并不是改变了原始数据，而是将原始数据的指针指向的新分配内存，并在新内存上设置新值，之前copy和strong指针还指向原始的A，即改变不可变对象其实改变的是其指针指向的内存
 
 ```objective-c
 NSMutableString *tempString = [NSMutableString stringWithFormat:@"original"];
@@ -194,49 +194,48 @@ NSArray对象可能会在运行时发现其实运作的是NSCFArray(来自Core F
 ```objective-c
 NSArray *arr = [NSArray array];
 if ([arr isKindOfClass:[NSArray class]]) {
-NSLog( @"[arr isKindOfClass:[NSArray class]]");
-}
+	NSLog( @"[arr isKindOfClass:[NSArray class]]"); // 输出
+} 
 if ([arr isKindOfClass:[NSMutableArray class]]) {
-NSLog( @"[arr isKindOfClass:[NSMutableArray class]]");
+	NSLog( @"[arr isKindOfClass:[NSMutableArray class]]");
 }
 if ([arr isMemberOfClass:[NSArray class]]) {
-NSLog( @"[arr isMemberOfClass:[NSArray class]]");
+	NSLog( @"[arr isMemberOfClass:[NSArray class]]");
 }
 if ([arr isMemberOfClass:[NSMutableArray class]]) {
-NSLog( @"[arr isMemberOfClass:[NSMutableArray class]]");
+	NSLog( @"[arr isMemberOfClass:[NSMutableArray class]]");
 }
 
 if ([[arr mutableCopy] isKindOfClass:[NSArray class]]) {
-NSLog( @"[[arr mutableCopy] isKindOfClass:[NSArray class]]");
+	NSLog( @"[[arr mutableCopy] isKindOfClass:[NSArray class]]"); // 输出
 }
 if ([[arr mutableCopy] isKindOfClass:[NSMutableArray class]]) {
-NSLog( @"[[arr mutableCopy] isKindOfClass:[NSMutableArray class]]");
+	NSLog( @"[[arr mutableCopy] isKindOfClass:[NSMutableArray class]]"); // 输出
 }
 if ([[arr mutableCopy] isMemberOfClass:[NSArray class]]) {
-NSLog( @"[[arr mutableCopy] isMemberOfClass:[NSArray class]]");
+	NSLog( @"[[arr mutableCopy] isMemberOfClass:[NSArray class]]");
 }
 if ([[arr mutableCopy] isMemberOfClass:[NSMutableDictionary class]]) {
-NSLog( @"[[arr mutableCopy] isMemberOfClass:[NSMutableDictionary class]]");
+	NSLog( @"[[arr mutableCopy] isMemberOfClass:[NSMutableDictionary class]]");
 }
 
-NSMutableArray *mutableArr = [arr mutableCopy];
-[mutableArr addObject:@"b"];
-NSLog(@"%@",mutableArr);
 
+// MyArray 继承于 NSArray
 MyArray *myArr = [[MyArray alloc] init];
 if ([myArr isMemberOfClass:[MyArray class]]) {
-NSLog(@"[myArr isMemberOfClass:[MyArray class]]");
+	NSLog(@"[myArr isMemberOfClass:[MyArray class]]"); // 输出
 }
 if ([myArr isMemberOfClass:[NSArray class]]) {
-NSLog(@"[myArr isMemberOfClass:[NSArray class]]");
+	NSLog(@"[myArr isMemberOfClass:[NSArray class]]");
 }
 if ([myArr isKindOfClass:[MyArray class]]) {
-NSLog(@"[myArr isKindOfClass:[MyArray class]]");
+	NSLog(@"[myArr isKindOfClass:[MyArray class]]"); // 输出
 }
 if ([myArr isKindOfClass:[NSArray class]]) {
-NSLog(@"[myArr isKindOfClass:[NSArray class]]");
+	NSLog(@"[myArr isKindOfClass:[NSArray class]]"); // 输出
 }
 
+// 输出
 [arr isKindOfClass:[NSArray class]]
 [[arr mutableCopy] isKindOfClass:[NSArray class]]
 [[arr mutableCopy] isKindOfClass:[NSMutableArray class]]

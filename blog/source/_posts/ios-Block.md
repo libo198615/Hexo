@@ -124,11 +124,12 @@ NSLog(@"%@",name); // b
 
 
 
-`Block 为什么能实现神奇的回调
+`Block` 为什么能实现神奇的回调
 
 `block` 代码块赋值给 `bVC.callBackBlock`，此时 `callBackBlock` 的指针就指向这个代码块。
 调用 `callBackBlock(NSString *text)`.由于` callBackBlock` 的指针是指向 `A` 中的 `block` 代码块，因此执行代码块的代码，实现回调。
 现在再通过一段代码可以更清晰地理解这个原理：
+
 ```objective-c
 bVC.callBackBlock = ^(NSString *text){ //1
     NSLog(@"text is %@",text);
@@ -153,18 +154,17 @@ bVC.callBackBlock = ^(NSString *text){ //2
 
 ##### 循环引用
 
-其一:当前对象强引用着blockTest,这句话很好理解,说白了也就是说当前的对象self在内存中不释放,那么blockTest作为self的属性也不会释放.
-              
-其二:根据block捕捉上下文变量的原理,block内部使用了self,那么将对self强引用.
-              
-`block`结构体把`weakSelf`作为了自己的属性,或者说直接捕获的是`weakSelf`这个局部变量作为自己的属性,但是可以通俗直白的理解为结构体直接引用了`weakSelf`内存空间想使用`weakself`中保存的`self`指针,而这个`weakSelf`并没有增加`self`的引用计数,所以`self`依然可以释放.
+1. 当前对象强引用block,当前的对象self在内存中不释放,那么block作为self的属性也不会释放.
+  
+2. 根据block捕捉上下文变量的原理,block内部使用了self,那么将对self强引用.
+                 
+
+`block`结构体把`weakSelf`作为了自己的属性,或者说直接捕获的是`weakSelf`这个局部变量作为自己的属性,而这个`weakSelf`并没有增加`self`的引用计数,所以`self`依然可以释放.
 
 使用`strongSelf`后，代码会增加这么一句`WYTestObject * strongSelf =  weakSelf`
-`strongSelf`赋值得到的是`self`(由weakSelf传过来的),这使得在`block`函数体运行期间`self`是不会被释放。而strongSelf仅仅是个局部变量，存在栈中，大括号走完其函数体重的局部变量就会被释放，也就是说函数执行完以后,`strongSelf`作为局部变量正常释放，没有内存泄漏。
+`strongSelf`赋值得到的是`self`(由weakSelf传过来的),这使得在`block`函数体运行期间`self`是不会被释放。而strongSelf仅仅是个局部变量，存在栈中，大括号走完其函数体内的局部变量就会被释放，也就是说函数执行完以后,`strongSelf`作为局部变量正常释放，没有内存泄漏。
 
 ##### 如何打破循环引用
-
-
 
 ```objective-c
 //  YTKBaseRequest.m
@@ -183,7 +183,7 @@ bVC.callBackBlock = ^(NSString *text){ //2
 - 第一个办法是「事前避免」，我们在会产生循环引用的地方使用 weak 弱引用，以避免产生循环引用。
 - 第二个办法是「事后补救」，我们明确知道会存在循环引用，但是我们在合理的位置主动断开环中的一个引用，使得对象得以回收。
 
-AFNetworking`在使用后主动将`block`置为`nil`，以此来打破循环引用
+`AFNetworking`在使用后主动将`block`置为`nil`，以此来打破循环引用
 
 ```objective-c
 - (void)setCompletionBlock:(void (^)(void))block {
@@ -261,7 +261,7 @@ AFNetworking`在使用后主动将`block`置为`nil`，以此来打破循环引�
 @property (nonatomic, strong) UIViewController *superViewControler;
 
 __weak __typeof__(self) weakSelf = self;
-_vc1.superViewControler = weakSelf; // 这里还是强引用
+_vc1.superViewControler = weakSelf; // 这里还是强引用 superViewControler是属性，不是局部变量
 ```
 
               

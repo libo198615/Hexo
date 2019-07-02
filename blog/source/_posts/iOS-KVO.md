@@ -43,7 +43,7 @@ static void * SubViewControllerBalanceObserverContext = &SubViewControllerBalanc
 ```objective-c
 [self.model removeObserver:self forKeyPath:@"balance" context:SubViewControllerBalanceObserverContext
 ```
-正确做法是判断不是自己的，主动调用父类的监听方法。
+正确做法是判断是不是自己的，如果不是，主动调用父类的监听方法。
 `object`是被监听的对象
 
 

@@ -22,11 +22,11 @@ tags:
 ##### AutoreleasePool 何时释放
 
 1. `Autorelease`对象是在当前的`runloop`迭代结束时释放的，而它能够释放的原因是系统在每个`runloop`迭代中都加入了自动释放池`Push`和`Pop`。 
-2. 是手动调用`AutoreleasePool`的释放方法（drain方法）来销毁`AutoreleasePool`。超出作用域时，`pool drain`
+2. 手动调用`AutoreleasePool`的释放方法（drain方法）来销毁`AutoreleasePool`。超出作用域时，`pool drain`
 3. autoreleasePool的析构方法。下面延迟释放有解释
 
 
-##### 没有runloop
+##### 如果子线程中没有runloop
 
 在子线程你创建了`Pool`的话，产生的 `Autorelease` 对象就会交给 `pool` 去管理。如果你没有创建 `Pool` ，但是产生了 `Autorelease` 对象，就会调用 `autoreleaseNoPage` 方法。在这个方法中，会自动帮你创建一个 `hotpage`（hotPage 可以理解为当前正在使用的 AutoreleasePoolPage）并调用 `page->add(obj)`将对象添加到 `AutoreleasePoolPage` 的栈中
 
@@ -102,7 +102,7 @@ for (int i = 0; i <= 1000; i ++) {
 ```
 按照C语言局部变量的定义，`image`超出了作用域就会被释放，可是在测试的时候发现这里内存一直在增加，这是为什么呢？
 解析：
-`[UIImage imageNamed:]` 创建的对象是`Autorelease`的，`Autorelease`的对象会添加到最近的一个`AutoreleasePool`里面，等`AutoreleasePool`结束的时候统一释放。此方法被一个较大的autoreleasePool管理着，变量会被一直持有，直到此autoreleasePoll销毁时才释放。
+`[UIImage imageNamed:]` 创建的对象是`Autorelease`的，`Autorelease`的对象会添加到最近的一个`AutoreleasePool`里面，等`AutoreleasePool`结束的时候统一释放。此方法被一个较大的`autoreleasePool`管理着，变量会被一直持有，直到此`autoreleasePool`销毁时才释放。
 
 ```objective-c
 for (int i = 0; i <= 1000; i ++) {
