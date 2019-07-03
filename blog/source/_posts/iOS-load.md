@@ -11,10 +11,9 @@ tags:
 
 ##### load
 
+![1](iOS-load/1.jpg)
 
-{% asset_img 1.png 图片说明 %}
 `+load`方法在这个文件被程序装载时调用。只要是在`Compile Sources`中出现的文件总是会被装载，这与这个类是否被用到无关，因此`+load`方法总是在`main`函数之前调用。
-
 
 由于调用`load`方法时的环境很不安全，我们应该尽量减少`load`方法的逻辑。另一个原因是`load`方法是线程安全的，它内部使用了锁，所以我们应该避免线程阻塞在`load`方法中。
 一个常见的使用场景是在`load`方法中实现`Method Swizzle：`
@@ -22,6 +21,7 @@ tags:
 ##### initialize
 
 `initialize`自动调用父类的`initialize`。即使子类没有实现`initialize`方法，也会调用父类的方法，这会导致一个很严重的问题：
+
 ```
 // In Parent.m
 + (void)initialize {
@@ -62,5 +62,7 @@ load -> main() -> initialize
 | initialize | 首次使用调用，main函数之后 | 无关 | 子类不实现同样会调用父类，导致父类调用两次 |
 
 
-{% asset_img 2.png 图片说明 %}
-{% asset_img 3.png 图片说明 %}
+
+![2](iOS-load/2.png)
+
+![3](http://ww4.sinaimg.cn/large/006tNc79ly1g4mcrp7gwlj314i0k442b.jpg)

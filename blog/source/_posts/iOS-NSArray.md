@@ -10,7 +10,7 @@ tags:
 NSArray *arr = @[@1, @2, @3];
 NSMutableArray *muArr = [NSMutableArray arrayWithArray:arr];
 
-// for in 改变可变数据会崩溃
+// for in 移除数据会崩溃，循环次数一定，但是删除数据后会导致越界
 //    for (NSNumber *num in muArr) {
 //        if (num.integerValue == 2) {
 //            [muArr removeObject:num];
@@ -45,7 +45,7 @@ NSMutableArray是线程不安全的，当有多个线程同时对数组进行操
 ##### 问题
 数组和字典属于类族，最好不要继承
 
-在 Cocoa 中有一种奇葩的类存在 Class Clusters。面向对象的编程告诉我们：“类可以继承，子类具有父类的方法”。而 Cocoa 中的 Class Clusters 虽然平时表现的像普通类一样，但子类却没法继承父类的方法。 NSMutableArray就是这样的存在。为什么会这样呢？因为 Class Clusters 内部其实是由多个私有的类和方法组成。虽然它有这样的弊端，但是好处还是不言而喻的。例如，NSNumber 其实也是这种类，这样一个类可以把各种不同的原始类型封装到一个类下面，提供统一的接口。这正设计模式中的抽象工厂模式。
+在 Cocoa 中有一种奇葩的类存在 Class Clusters。面向对象的编程告诉我们：“类可以继承，子类具有父类的方法”。而 Cocoa 中的 Class Clusters 虽然平时表现的像普通类一样，但子类却没法继承父类的方法。 NSMutableArray就是这样的存在。为什么会这样呢？因为 Class Clusters 内部其实是由多个私有的类和方法组成。例如，NSNumber 其实也是这种类，这样一个类可以把各种不同的原始类型封装到一个类下面，提供统一的接口。这正设计模式中的抽象工厂模式。
 
 查看Apple的文档，要继承这样的类需要必须实现其primitive methods方法，实现了这些方法，其它方法便都能通过这些方法组合而成。比如
 
@@ -77,30 +77,31 @@ C[模块A] -->|释放掉旧的数组| D(模块B)
 - 古老的C数组:
 优点:查询速度很快，直接通过下表找到对应的值
 缺点:修改、删除数据很慢，需要移动基于所有的其他的元素
-{% asset_img 11.png 图片说明 %}
-{% asset_img 12.png 图片说明 %}
+![11](http://ww1.sinaimg.cn/large/006tNc79ly1g4mdkci3foj30he0aggo1.jpg)
+![12](http://ww1.sinaimg.cn/large/006tNc79ly1g4mdl3mkxhj30ft0aiq51.jpg)
+
 - NSMutableArray
-{% asset_img 13.png 图片说明 %}
+![13](http://ww4.sinaimg.cn/large/006tNc79ly1g4mdlu6em5j30hn08qgmt.jpg)
 offset: 有效数据起始位置偏移量
 size: 实际占用的内存大小
 used: 数组的实际的有效数据个数
 *list: 实际内存的起始地址
-{% asset_img 14.png 图片说明 %}
+![14](http://ww2.sinaimg.cn/large/006tNc79ly1g4mdm4mjq0j30hs08k75u.jpg)
 **删除元素**
 [arr removeObjecAtIndex:0];
 仅仅修改 offset即可，内存完全不需要移动。
-{% asset_img 15.png 图片说明 %}
+![15](http://ww4.sinaimg.cn/large/006tNc79ly1g4mdme4pl0j30ha0eptcm.jpg)
 **插入元素**
 [arr insertObjec:@"test"atIndex:0];
 如果buff的size还够用，不需要扩展buff，数据会在buff的末端添加进去，此时offset由0变成size-1,used+1.over
 循环buff的牛逼之处就在于此，无需移动内存，实现插入元素。
-{% asset_img 16.png 图片说明 %}
+![16](http://ww2.sinaimg.cn/large/006tNc79ly1g4mdmq6ytlj30fn0bgach.jpg)
 **删除元素**
 [arr removeObjecAtIndex:3];
 删除头尾元素直接修改offset或者used即可
 但是如果删除中间元素，就避免不了移动其他元素，不过NSArray会选择更少移动的那一边移动数据。
 所以我们在实际使用过程中应该尽量避免这么做。
-{% asset_img 17.png 图片说明 %}
+![17](http://ww1.sinaimg.cn/large/006tNc79ly1g4mdn1h8puj30h60a7779.jpg)
 
 
 https://www.jianshu.com/p/0b5a97720ebe
