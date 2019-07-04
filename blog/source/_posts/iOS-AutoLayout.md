@@ -17,3 +17,9 @@ tags:
 
 - Hugging 拉伸优先级
 - Compression 压缩优先级
+
+
+
+
+
+如果设置了AutoLayout，然后又改变了frame，view的frame会改变，但是旋转屏幕后还是会回到AutoLayout的设置。AutoLayout会在view每次刷新frame时生效，手动改变frame只是临时改变一下，当下次更新view时还是依据AutoLayout来显示

@@ -35,8 +35,8 @@ tags:
     });
 }
 ```
-首先，每一个请求对应一个AFHTTPRequestOperation实例对象（以下简称operation），每一个operation在初始化完成后都会被添加到一个NSOperationQueue中。
-由这个NSOperationQueue来控制并发，系统会根据当前可用的核心数以及负载情况动态地调整最大的并发 operation 数量，我们也可以通过setMaxConcurrentoperationCount:方法来设置最大并发数。注意：并发数并不等于所开辟的线程数。具体开辟几条线程由系统决定。
+首先，每一个请求对应一个AFHTTPRequestOperation实例对象，每一个operation在初始化完成后都会被添加到一个NSOperationQueue中。
+由这个NSOperationQueue来控制并发，系统会根据当前可用的核心数以及负载情况动态地调整最大的并发 operation 数量，我们也可以通过setMaxConcurrentoperationCount:方法来设置最大并发数。
 
 也就是说此处执行operation是并发的、多线程的。
 
@@ -53,7 +53,7 @@ self.operationQueue = [[NSOperationQueue alloc] init];
 self.operationQueue.maxConcurrentOperationCount = 1;
 self.session = [NSURLSession sessionWithConfiguration:self.sessionConfiguration delegate:self delegateQueue:self.operationQueue];
 ```
-`NSURLSession`发起的请求，不再需要在当前线程进行代理方法的回调！可以指定回调的`delegateQueue`，这样我们就不用为了等待代理回调方法而苦苦保活线程了。
+`NSURLSession`发起的请求，不再需要在当前线程进行代理方法的回调。可以指定回调的`delegateQueue`，这样我们就不用为了等待代理回调方法而苦苦保活线程了。
 
 `2.0`的`operationQueue`是用来添加operation并进行并发请求的，所以不要设置为1，其回调都会在固定的单一线程中，是线程安全的
 `3.0`的`operationqueue`是专门用来执行请求回调的，为了安全的考虑，需要设置`maxConcurrentOperationCount = 1`来达到串行回调的效果

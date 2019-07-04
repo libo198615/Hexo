@@ -10,9 +10,9 @@ tags:
 - 一是处理代码里打警告
 方法废弃警告
 类型转换警告
-unused警告等。
+unused警告
 - 二是删除一些重复图片
-当时用的是`PhotoSweepper`，软件只能查出来重复的图片，但是删的时候还是要注意留谁，建议把不准的看下重复图片的像素。
+使用工具`PhotoSweepper`，软件只能查出来重复的图片，但是删的时候还是要注意留谁.
 
 ##### 无用图片
 `LSUnusedResources` 做的改进
@@ -45,4 +45,4 @@ Build Settings->Optimization Level有几个编译优化选项，release版应该
 Strip Debug Symbols During Copy 和 Symbols Hidden by Default 在release版本应该设为yes，可以去除不必要的调试符号。Symbols Hidden by Default会把所有符号都定义成”private extern”，具体意思和作用我还不清楚，有待研究，但设了后会减小体积。这些选项目前都是XCode默认选项，但旧版XCode生成的项目可能不是，可以检查一下。
 
 
-{% asset_img 1.png 图片说明 %}
+![1](http://ww3.sinaimg.cn/large/006tNc79ly1g4mmq70hskj30lv0ltacb.jpg)

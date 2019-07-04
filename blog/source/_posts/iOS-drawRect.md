@@ -27,12 +27,6 @@ tags:
 
 调用时机  (父控件->本View->子控件)
 
-本`view`的`frame`改变时，可能会影自己的`subView`的`frame`和自己同一级的`view`，所以除了要调用自己`layoutSubView`还要调用`subView`的`layoutSubView`
-
-1. 本View init初始化不会触发layoutSubviews
-
-2. 子控件addSubview会触发本View的layoutSubviews;(最常用)
-
 `layoutSubviews`方法调用先于`drawRect`，也就是先布局子视图，再重绘。
 系统会自动调用`layoutSubviews` ,不要手动调用,如果要强制更新布局,可以调用`setNeedsLayout`方法,如果想立即显示`View`,需要调用`layoutIfNeeded`方法;
 
