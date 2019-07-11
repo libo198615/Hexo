@@ -65,8 +65,7 @@ typedef struct objc_selector *SEL;
 
 1. 检测这个 `selector`是不是要忽略的。
 2. 检查`target`是不是为`nil`。
-如果这里有相应的`nil`的处理函数，就跳转到相应的函数中。
-如果没有处理`nil`的函数，就自动清理现场并返回。这一点就是为何在`OC`中给`nil`发送消息不会崩溃的原因。
+如果是`nil`就自动清理现场并返回。这一点就是为何在`OC`中给`nil`发送消息不会崩溃的原因。
 3. 确定不是给`nil`发消息之后，在该class的缓存中查找方法对应的`IMP`实现。
 如果找到，就跳转进去执行。
 如果没有找到，就在方法分发表里面继续查找，一直找到`NSObject`为止。
@@ -89,6 +88,7 @@ IMP method_getImplementation(Method m)
 第一种方法
 对于第一种方法而言，类方法和实例方法实际上都是通过调用class_getMethodImplementation()来寻找IMP地址的，不同之处在于传入的第一个参数不同。
 类方法(假设有一个类 A)
+
 ```objective-c
 class_getMethodImplementation(objc_getMetaClass("A"),@selector(methodName));
 ```
@@ -100,8 +100,8 @@ class_getMethodImplementation([A class],@selector(methodName));
 
 如上图 `meta class`的`isa`指向了`root meta class`(绝大部分情况下root class就是NSObject)，`root meta class`的`isa`指向自身，isa的链路就是这样。
 ```objective-c
-NSLog(@"%p", [testObj class]); 
-NSLog(@"%p", [TestObject class]);
+NSLog(@"%p", [testObj class]);  // isa指针指向了类
+NSLog(@"%p", [TestObject class]); // 返回类自己
 NSLog(@"%p", [NSObject class]); 
 
 log输出：
@@ -109,12 +109,8 @@ log输出：
 0x100001180
 0x1004a0e98
 ```
-```objective-c
-TestObject *testObj = [TestObject new];
-NSLog(@"%d", [testObj class] == [TestObject class]);
 
-这个log会输出1
-```
+
 从源码看结果
 ```objective-c
 + (Class)class {
@@ -126,6 +122,8 @@ NSLog(@"%d", [testObj class] == [TestObject class]);
 }
 ```
 `object_getClass`方法最终返回的是`isa`。所以`TestObject`调用`class`方法，返回的是自身；`testObj`调用`class`方法，返回的是`isa`指向的类，也是`TestObject`。
+
+##### isMemberOfClass VS isKindOfClass
 
 ```objective-c
 // 只测试当前类
@@ -225,9 +223,9 @@ struct category_t {
 子类`SubVC`如果不实现`viewWillAppear`，会默认调用，打印`start`
 子类`SubVC`如果实现`viewWillAppear`，并调用父类的`viewWillAppear`，打印`start`
 子类`SubVC`如果实现`viewWillAppear`，但不调用父类的`viewWillAppear`，不打印`start`
-本质是：是否调用了交换后的方法
+- 本质是：是否调用了交换后的方法。思考，`viewWillAppear`这类方法本身子类肯定会调用，父类是否调用，要看子类是否调用了父类的方法。
 
-`swizzling`应该只在`+load`中完成。 在 `Objective-C` 的运行时中，每个类有两个方法都会自动调用。`+load `是在一个类被初始装载时调用，`+initialize` 是在应用第一次调用该类的类方法或实例方法前调用的。两个方法都是可选的，并且只有在方法被实现的情况下才会被调用。
+
 
 
 可以使用第三方库` JRSwizzle.h`
@@ -259,9 +257,8 @@ struct category_t {
 如果app有埋点需求，并且要自己实现一套埋点逻辑，那么这里用到Swizzling是很合适的选择。
 - 实现异常保护
 
-日常开发我们经常会遇到`NSArray`数组越界的情况，苹果的`API`也没有对异常保护，所以需要我们开发者开发时候多多留意。关于`Index`有好多方法，objectAtIndex，removeObjectAtIndex，replaceObjectAtIndex，exchangeObjectAtIndex等等，这些设计到Index都需要判断是否越界。
+日常开发我们经常会遇到`NSArray`数组越界的情况。
 
-常见做法是给NSArray，NSMutableArray增加分类，增加这些异常保护的方法，不过如果原有工程里面已经写了大量的AtIndex系列的方法，去替换成新的分类的方法，效率会比较低。这里可以考虑用Swizzling做。
 ```objective-c
 #import "NSArray+ Swizzling.h"
 #import "objc/runtime.h"
@@ -301,6 +298,18 @@ struct category_t {
 `Method Swizzling`，本质上就是对`IMP`和`SEL`进行交换。也可以对`isa`指针进行交换
 在苹果的官方库里面有一个很有名的技术就用到了这个`Isa Swizzling`，那就是`KVO`
 `KVO`是为了监听一个对象的某个属性值是否发生变化。在属性值发生变化的时候，肯定会调用其`setter`方法。所以`KVO`的本质就是监听对象有没有调用被监听属性对应的`setter`方法。具体实现应该是重写其`setter`方法即可。
+
+
+
+##### object_getClass
+
+```objective-c
+Class cls = object_getClass(obj); // 获取isa指针
+    
+Class cls2 = [obj class]; // 1. 对象 获取isa指针  2. 类 返回的是自己，其结果同 1
+```
+
+
 
 
 

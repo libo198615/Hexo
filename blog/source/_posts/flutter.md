@@ -83,7 +83,7 @@ body: new Center (
 ---
 #### 创建一个无限滚动的 `ListView`
 
-```
+```dart
 class RandomWordsState extens State <RandomWords> {
     // _开始的变量会强制变成私有的
     final _suggestions = <WordPair>[];
@@ -118,3 +118,19 @@ class RandomWordsState extens State <RandomWords> {
     }
 }
 ```
+
+
+
+#### 布局
+
+- Padding
+
+包裹其子元素，统一控制其 上下左右间距
+
+- Row
+
+水平布局
+
+- Column
+
+垂直布局
