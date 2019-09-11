@@ -251,9 +251,27 @@ bVC.callBackBlock = ^(NSString *text){ //2
 }]
 ```
 
-##### 
+#### strongSelf
 
-              
+如果block还未执行，对象已经释放，则strongSelf为null。(如果使用weakSelf，对象释放后也为null而不是nil?)，只有在block已经执行，而此时释放weakSelf，由于block在运行而阻止了weakSelf所指向的self的释放，直到block执行完，才能释放
+
+```objective-c
+a.cover = ^{
+    __strong typeof(self) strongSelf = weakSelf;
+  
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        NSLog(@"%@",weakSelf);
+    });
+    
+};
+```
+
+```objective-c
+Test *t = nil;
+NSLog(@"%@",t); // (null) 可能nil就会被打印为(null)
+```
+
+
 
 ##### 强引用赋值 weakSelf 仍为强引用
 

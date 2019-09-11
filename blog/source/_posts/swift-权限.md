@@ -6,7 +6,6 @@ categories:
 tags:
 ---
 
-
 模块：独立的代码单元 独立的框架 独立的应用程序 不同模块间使用 `import` 引入另一个模块
 源文件：同一个框架或应用程序中不需要使用 `import `
 
@@ -14,13 +13,13 @@ tags:
 ---
 
 加了`private`就不要想在其他类中修改其值了，不论是`private(set)`还是不存在的`private(get)`，因为这样`private`就没有意义了，还不如直接去掉。
-```
+```swift
 // 只有在 MyClass 中可以读写
 class MyClass {
     private var name: String?
 }
 ```
-```
+```swift
 // 在类型之外也能够读取到这个类型
 // 只能在类型内部对其进行更新
 class MyClass {
@@ -28,7 +27,7 @@ class MyClass {
 }
 ```
 这种写法没有对”读”做限制,相当于使用了默认的 `internal` 权限。如果我们希望在别的 `module` 中也能访问这个属性,同时又保持只在当前类可以设置的话,我们需要将 `get` 的访问权限提高为 `public`。属性的访问控制可以通过两次的访问权限指定来实现, 具体来说,将刚才的声明变为: 
-```
+```swift
 public class MyClass {
     public private(set) var name: String?
 }
@@ -39,7 +38,7 @@ public class MyClass {
 
 #### fileprivate 文件内私有
 ---
-```
+```swift
 class User {
     private var name1 = "private"
     fileprivate var name2 = "fileprivate"
@@ -80,3 +79,12 @@ extension User {
 
 
 
+#### 修饰 extension
+
+在internal或无修饰符情况下，不论extension中的函数和类文件是否在同一文件中，均可以顺利调用执行
+
+在private修饰的extension函数中，仅有与类在同一文件的可以被顺利调用，其他情况下均无法被调用
+
+只有在public修饰的类中才可以存在被public修饰的函数
+
+被public修饰的函数，不论是否与本类在同一文件，在本类和其他类中均可以被调用

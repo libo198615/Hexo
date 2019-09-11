@@ -121,7 +121,7 @@ uintptr_t objc_object::rootRetainCount() {
 
 - SideTable
 
-散列表在系统中的提现是一个`sideTables`的哈希映射表，而一个散列表中又包含众多`sideTable`提高多线程的访问效率。每个`SideTable`中又包含了三个元素，`spinlock_t`自旋锁，`RefcountMap`引用计数表，`weak_table_t`弱引用表。
+散列表在系统中体现是一个`sideTables`的哈希映射表，而一个散列表中又包含众多`sideTable`提高多线程的访问效率。每个`SideTable`中又包含了三个元素，`spinlock_t`自旋锁，`RefcountMap`引用计数表，`weak_table_t`弱引用表。
 
 对于每张`SideTable`表中的弱引用表`weak_table_t`，其也是一张哈希表的结构，其内部包含了每个对象对应的弱引用表`weak_entry_t`，而`weak_entry_t`是一个结构体数组，其中包含的则是每一个对象弱引用的对象所对应的弱引用指针。
 
@@ -317,7 +317,7 @@ Person *p = [[Person alloc] init]; // 引用计数器 = 1
 
 ##### 引申
 
-`nsnotification` `kvo` 不会是`viewController`的引用计数器加一，原因是取消通知和监听的方法放到了`dealloc`里，只要`dealloc`被调用，说明引用计数器为0，添加的通知和监听没有对引用计数器进行加一操作
+`nsnotification` `kvo` 不会使`viewController`的引用计数器加一，原因是取消通知和监听的方法放到了`dealloc`里，只要`dealloc`被调用，说明引用计数器为0，添加的通知和监听没有对引用计数器进行加一操作
 `NSTimer`会使`viewController`的引用计数器加一，因为放在`dealloc`里的`[timer interval];`不会执行，timer阻碍了`viewController`的释放。(还要考虑`runloop`)
 
 `superView`先销毁，因为`superView`持有`subview`，`superView`不销毁`subView`的引用计数器不为0。也有可以`superView`已经释放，但是`subView`被其他对象引用而没有释放，此时可能造成内存泄漏

@@ -24,7 +24,7 @@ tags:
 @property (nonatomic, retain) // 会使引用计数加1
 
 // ARC 后使用 weak strong  
-@property (nonatomic, weak) // 若引用
+@property (nonatomic, weak) // 弱引用
 @property (nonatomic, strong) // 强引用
 
 @end    
@@ -138,11 +138,11 @@ atomic：原子属性，为setter方法加自旋锁（即为单写多读）
 
 assign修饰的修饰基本数据类型分配在栈上，栈上空间的分配和回收都是系统来处理的，因此开发者无需关注，也就不会产生野指针的问题。
 
-而assign修饰的对象类型数据和weak修饰的对象类型数据一样分配在堆中。如果assing修饰对象释放后，其指针将称为野指针。
+而assign修饰的对象类型数据和weak修饰的对象类型数据一样分配在堆中。如果assing修饰对象释放后，其指针将成为野指针。
 
 #### weak
 
-`weak`是ARC的产物，主要作用是修饰若引用的对象，防止循环引用。
+`weak`是ARC的产物，主要作用是修饰弱引用的对象，防止循环引用。
 
 ```objective-c
 @property (nonatomic, weak) id objc;
@@ -159,6 +159,12 @@ assign修饰的修饰基本数据类型分配在栈上，栈上空间的分配�
 #### delegate 用assign还weak？
 
 assign属性一般是对C基本数据类型成员变量的声明，当然也可以用在对象类型成员变量上，只是其代表的意义只是单纯地拷贝所赋值变量的指针。即如果对某assign成员变量B赋值某对象A的指针，则此B只是简单地保存此指针的值，且并不持有对象A，也就意味着如果A被销毁，则B就指向了一个已经被销毁的对象，如果再对其发送消息会引发崩溃。
+
+> nil 指向oc中对象的空指针，weak会自动将指针指向的对象置为nil
+>
+> null 指向其他类型的空指针，如一个c类型的内存指针。assign修饰的对象销毁后，指针指向的即为null
+>
+> 向nil发送消息，不会崩溃，但是想null发送消息会引发崩溃。
 
 `MRC` 时用 `assign` 修饰 `delegate` 但是要在`dealloc`中主动将其置为`nil`
 
@@ -189,16 +195,6 @@ assign属性一般是对C基本数据类型成员变量的声明，当然也可�
 ```
 
 
-
-#### protocol 中的属性声明
-
-```objective-c
-@property (nonatomic, strong) NSString *name;
-```
-
-不自动生成`getter` `setter`，表明实现此协议的类必须自己声明`NSString *name`
-不声明也可以写`self.name`，但当调用`setter`，`getter`方法时会因为找不到方法而崩溃
-即使自己不添加属性`NSString *name`，而只添加`setter`，`getter`方法，你会发现，`setter`方法无法写，因为没有`ivar`，你调用不了`_name`。
 
 #### category 中的属性声明
 

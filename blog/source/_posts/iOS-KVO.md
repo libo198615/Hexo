@@ -23,12 +23,15 @@ tags:
 `A_VC` 持有 `model`的引用，`push`到`B_VC`，并将`model`赋值给`B_VC`的`model`。`B_VC`添加对`model.name`的监听，不移除，此时`pop`到`A_VC`,更改`model.name`，因为监听对象`B_VC`的指针为野指针，会崩溃。
 
 
-- 静态变量的地址可以保证`context`的独一无二
+- context
 
-```
-static void * SubViewControllerBalanceObserverContext = &SubViewControllerBalanceObserverContext;
+```objective-c
+// 静态变量的地址可以保证`context`的独一无二
+static void * SubViewControllerBalanceObserverContext = 
+&SubViewControllerBalanceObserverContext;
 ```
 `superVC`和`subVC`都监听了`model.name`，当`model.name`改变时,子类会收到两次监听，一次是自己的，另一次因为`superVC`的监听，但`self`依然是`subVC`。
+
 ```objective-c
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSKeyValueChangeKey,id> *)change context:(void *)context
 {
@@ -45,7 +48,6 @@ static void * SubViewControllerBalanceObserverContext = &SubViewControllerBalanc
 ```
 正确做法是判断是不是自己的，如果不是，主动调用父类的监听方法。
 `object`是被监听的对象
-
 
 `KVO`的`addObserver`和`removeObserver`需要是成对的，如果重复`remove`则会导致`NSRangeException`类型的`Crash`，如果忘记`remove`则会在观察者释放后再次接收到`KVO`回调时`Crash`。
 

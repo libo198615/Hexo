@@ -69,3 +69,37 @@ $ pod trunk register 邮箱 '昵称' --description=' 这里写描述'
 pod trunk push APPHelp.podspec
 ```
 
+
+
+
+
+#### user_frameworks!
+
+表名使用动态链接库，会生成framework；默认是static libraries方式管理，会生成.a文件(静态连接库)
+
+
+
+```
+pod ``, `~> 2.0` // 大于 2.0 的最新版
+pod ``, `2.0` // 固定 2.0
+```
+
+```
+// 不同的target 不同的 platform 引入不同的插件
+target :'zxptUser' do
+platform :ios  
+pod 'Reachability',  '~> 3.0.0'  
+pod 'SBJson', '~> 4.0.0'  
+  
+platform :ios, '7.0'  
+pod 'AFNetworking', '~> 2.0'
+end
+
+target :'zxptUser_local' do
+pod 'OpenUDID', '~> 1.0.0'
+end
+```
+
+### Podfile.lock
+
+当你执行`pod install`之后，除了 Podfile 外，CocoaPods 还会生成一个名为`Podfile.lock`的文件，Podfile.lock 应该加入到版本控制里面，不应该把这个文件加入到`.gitignore`中。因为`Podfile.lock`会锁定当前各依赖库的版本，之后如果多次执行`pod install` 不会更改版本，要`pod update`才会改`Podfile.lock`了。这样多人协作的时候，可以防止第三方库升级时造成大家各自的第三方库版本不一致。

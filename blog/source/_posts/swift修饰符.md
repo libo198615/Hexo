@@ -17,7 +17,7 @@ protocol Copyavle {
 ```
 
 - class引用类型，可以使用Self作为函数的返回值
-```
+```swift
 class ClassA {
     func action() -> Self {
         return self
@@ -26,7 +26,7 @@ class ClassA {
 ```
 
 - struct值类型，不能使用Self作为函数返回值
-```
+```swift
 struct StructA {
     func action() -> StructA {
         return self
@@ -39,7 +39,7 @@ struct StructA {
 ---
 
 #### precedencegroup
-```
+```swift
 // 优先运算符
 
 infix operator +* : InnerProductPrecedence // 定义一个中位操作符，即前后都是输入
@@ -66,7 +66,7 @@ let result = v1 +* v2 // 14
 ---
 
 #### Never
-```
+```swift
 /// The return type of functions that do not return normally, that is, a type
 /// with no values.
 ///
@@ -81,19 +81,18 @@ public enum Never {
 }
 ```
 
-
 ---
 
 #### mutating
 
-可改变 `struct enumeration` 的实参
+通过方法调用来改变 `struct enumeration` 的实参
 
 `swift` 包含三种类型
 
 * struct // value type
 * enum // value type
 * class  // reference type  默认可以修改属性值
-```
+```swift
 struct Point {
     var x = 0, y = 0
     mutating func moveBy(x: Int, y: Int) {
@@ -102,7 +101,7 @@ struct Point {
     }
 }
 ```
-```
+```swift
 enum TriStateSwitch {
     case Off, Low, High
     mutating func next() {
@@ -118,7 +117,6 @@ enum TriStateSwitch {
 }
 ```
 
-
 ---
 
 #### lazy
@@ -127,29 +125,28 @@ enum TriStateSwitch {
 只有第一次访问时才加载，如果永远不访问，它就不创建
 
 // 两种写法
-```
+```swift
 lazy var name = "Dog"
 ```
-```
+```swift
 lazy var a: Int = {
     pring("a = 1")
     return 1
 }()
 ```
-```
+```swift
 // 只打印一次
 classA.a
 classA.a
 ```
 如果在`closure`里面使用了`self`，也不会造成循环引用的问题，我们可以放心使用。注意：如果这个属性没有被`lazy`修饰，在`closure`里面是不能使用`self`的，因为这时`self`还没有初始化完成。
 
-
---- 
+---
 
 #### if    if let 
 
 如果常量是可选项`Optional`，`if`判断后仍然需要解包`!`
-```
+```swift
 let name: String? = "老王"
 let age: Int? = 10
 if name != nil && age != nil {
@@ -158,7 +155,7 @@ if name != nil && age != nil {
 // 输出:老王10
 ```
 如果常量是可选项`Optional`，`if let`判断后不需要解包`!`，`{}`内一定有值
-```
+```swift
 let name: String? = "老王"
 let age: Int? = 10// if let 连用,判断对象的值是否为'nil'
 if let nameNew = name,let ageNew = age {
@@ -168,7 +165,7 @@ if let nameNew = name,let ageNew = age {
 // 输出:老王10
 ```
 `if var`的用法，和`if let`的区别就是可以在`{}`内修改变量的值
-```
+```swift
 let name: String? = "老王"
 let age: Int? = 10
 if var nameNew = name,let ageNew = age {
@@ -181,11 +178,10 @@ if var nameNew = name,let ageNew = age {
 
 
 
-
 ---
 
 #### guard
-```
+```swift
 let age = 5
     
 guard age >= 10 else {
@@ -201,14 +197,13 @@ guard age >= 10 else {
 ##### final
 
 可以防止类`class`被继承，还可以防止子类重写父类的属性、方法以及下标。需要注意的是，`final`修饰符只能用于类，不能修饰结构体`struct`和枚举`enum`，
- 因为结构体和枚举只能遵循协议`protocol`。虽然协议也可以遵循其他协议，但是它并不能重写遵循的协议的任何成员，这就是结构体和枚举不需要final修饰的原因
-
+ 因为结构体和枚举只能遵循协议`protocol`。但是它并不能重写遵循的协议的任何成员，这就是结构体和枚举不需要final修饰的原因
 
 ---
 #### Defer
 
 代码压入栈，
-```
+```swift
 func lookforSomething(name:String) {
     print("begin")
     if name == ""{
@@ -240,11 +235,10 @@ func lookforSomething(name:String) {
 
 **3-1**
 
-
 ---
 #### associatedtype
 `associatedtype`类型是在`protocol中` 代指一个确定类型并要求该类型实现指定方法
-```
+```swift
 protocol Container {   
   associatedtype ItemType    
   mutating func append(_ item:ItemType)   
@@ -257,7 +251,7 @@ protocol Container {
 }
 ```
 定义一个协议时，有的时候声明一个或多个关联类型作为协议定义的一部分将会非常有用。关联类型为协议中的某个类型提供了一个占位名（或者说别名），其代表的实际类型在协议被采纳时才会被指定
-```
+```swift
 public protocol Sequence {
 
     /// A type representing the sequence's elements.

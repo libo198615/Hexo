@@ -107,4 +107,98 @@ class Tiger: Cat {
 ```
 
 ---
-####
+### 扩展
+
+swift 中的扩展可以添加计算属性
+
+### Class VS Struct
+Class是引用类型，Struct是值类型
+继承允许一个类继承另一个类的特性
+类型转换允许在运行时检查和解释一个类实例的类型
+析构器允许一个类实例释放任何其所被分配的资源
+引用计数允许对一个类的多次引用
+
+
+map：对每一个元素做一次处理
+flatmap：返回的数组中不能存在nil，同时会把optional解包
+flatmap 合并数组
+```objective-c
+let array = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
+ 
+let arr1 = array.map{ $0 }
+arr1 // [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
+ 
+let arr2 = array.flatMap{ $0 }
+arr2 // [1, 2, 3, 4, 5, 6, 7, 8, 9]
+```
+
+compactMap的改变是在于将flatMap处理non-optional序列类型，compactMap处理optional类型。即处理optional时，flatMap已被废弃
+
+
+
+##### for each
+
+不能使用`continue`和`break`
+return 只是跳出本次循环
+
+```swift
+for element in [1, 2, 3, 4] {
+     if element == 2 { return }
+     print("for --- \(element)")
+ }
+结果：
+for --- 1
+ 
+ 
+ 
+[1, 2, 3, 4].forEach { element in
+    if element == 2 { return }
+    print("forEach -- \(element)")
+}
+结果：
+forEach -- 1
+forEach -- 3
+forEach -- 4
+
+```
+
+
+
+### weak unowned
+
+ `weak`,属性可以是可选类型，即允许有 `nil` 值的情况。另一方面，倘若你使用 `unowned`，它不允许设为可选类型。因为一个 unowned 属性不能为可选类型
+
+在闭包里面为了解决循环引用问题，使用了 `[unowned self]`。如果回调在self已经被释放后再调用，会导致crash掉。unowned设置以后即使它原来引用的内容已经被释放了，它仍然会保持对被已经释放了的对象的一个 "无效的" 引用，它不能是 Optional 值，也不会被指向 nil 。如果你尝试调用这个引用的方法或者访问成员属性的话，程序就会崩溃。而 weak 则友好一些，在引用的内容被释放后，标记为 weak 的成员将会自动地变成 nil (因此被标记为 @ weak 的变量一定需要是 Optional 值)。
+
+### swift的优点
+
+使用swift来开发的话，要考虑swift的特性，语法特性，闭包、元组、快速迭代，支持方法扩展协议的结构体，函数式编程，原生错误处理。编程思想方面：函数式编程，面向协议编程，AOP面向切面编程
+
+```swift
+var str = "android"
+
+let c1 = { [str] in
+    print("I love \(str)")
+}
+
+let c2 = {
+    print("I love \(str)")
+}
+
+str = "ios"
+c1() // I love android
+c2() // I love ios
+```
+
+### copy on write
+
+在内部，这些 Array 结构体含有指向某个内存的引用。这个内存就是数组中元素所存储的位置。 两个数组的引用指向的是内存中同一个位置，这两个数组共享了它们的存储部分。不过，当我 们改变 x 的时候，这个共享会被检测到，内存将会被复制。这样一来，我们得以独立地改变两个 变量。昂贵的元素复制操作只在必要的时候发生，也就是我们改变这两个变量的时候发生复制
+
+
+
+### @objc、@objcMembers、dynamic
+
+Swift的动态派发依赖 ObjC 的运行时系统，为了将 Swift 的方法属性甚至类型暴露给 ObjC 使用，我们需要声明为 @objc ，此时可以在 ObjC 中访问，但是，声明为 @objc 的属性或方法有可能会被 Swift 优化为静态调用，不一定会动态派发，如果要使用动态特性，需要声明 dynamic ，这样才能完全的使用动态特性。
+
+- @objcMembers 声明的类会隐式地为所有的属性或方法添加 @objc 标示
+- 声明为 @objc 的类需要继承自 NSObject ，而 @objcMembers 不需要继承自 NSObject

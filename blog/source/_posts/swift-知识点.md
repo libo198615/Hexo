@@ -7,10 +7,10 @@ tags:
 ---
 
 #### 导航栏下划线
-```
+```swift
 navigationController?.navigationBar.setShadow(hidden: true)
 ```
-```
+```swift
 extension UINavigationBar {
 
     func setShadow(hidden: Bool) {

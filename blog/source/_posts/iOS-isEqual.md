@@ -80,13 +80,13 @@ isEqual相等的两个对象都加入到了NSSet中(set count = 2), 所以直接
 In reality, a simple XOR over the hash values of critical properties is sufficient 99% of the time(对关键属性的hash值进行位或运算作为hash值)
 
 对于上面Person类的hash方法实现如下
-```
+```objective-c
 - (NSUInteger)hash {
     return [self.name hash] ^ [self.birthday hash];
 }
 ```
 ##### 正确写法
-```
+```objective-c
 @interface Person : NSObject
 
 @property (nonatomic, copy) NSString *name;
@@ -162,7 +162,7 @@ Step 2: 如果目标位置上有多个相同hash值得成员, 此时再按照数
 
 ##### hash方法什么时候被调用?
 带着这个问题, 我们来看下面的例子
-```
+```objective-c
 Person *person1 = [Person personWithName:kName1 birthday:self.date1];
 Person *person2 = [Person personWithName:kName2 birthday:self.date2];
 
@@ -191,7 +191,7 @@ NSMutableDictionary *dictionaryKey2 = [NSMutableDictionary dictionary];
 NSLog(@"dictionary key end -------------------------------");
 ```
 为了看清楚hash方法是否被调用, 我们重写hash方法如下
-```
+```objective-c
 - (NSUInteger)hash {
     NSUInteger hash = [super hash];
     NSLog(@"hash = %ld", hash);
@@ -199,7 +199,7 @@ NSLog(@"dictionary key end -------------------------------");
 }
 ```
 打印结果如下
-```
+```objective-c
 person1 == person2 = NO
 [person1 isEqual:person2] = NO
 isEqual end -------------------------------

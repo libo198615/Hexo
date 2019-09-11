@@ -8,7 +8,7 @@ tags:
 
 
 #### 属性
-```
+```swift
 protocol SomeProtocol {
     var mustBeSettable: Int {get set}
     var doesNotNeedToBeSettable: Int {get} //只读
@@ -18,7 +18,7 @@ protocol SomeProtocol {
 属性必须声明为 {get set} 或{get}
 
 #### 使用 extension 来达到 可选
-```
+```swift
 protocol OptionalProtocol {
     func optionalMethod()        // 可选
     func necessaryMethod()       // 必须
@@ -51,7 +51,7 @@ obj.optionalMethod()  // Implemented in Class3
 obj.anotherOptionalMethod() // Implemented in extension
 ```
 #### question 1
-```
+```swift
 protocol A : class {} // 只能被 class 实现
 protocol B {}
 

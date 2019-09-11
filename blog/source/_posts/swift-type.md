@@ -7,7 +7,7 @@ tags:
 ---
 
 
-```
+```swift
 func printType<T>(of type: T.Type) {
     print("\(type)")
 }

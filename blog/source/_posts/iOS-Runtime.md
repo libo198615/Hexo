@@ -7,6 +7,7 @@ tags:
 ---
 
 `object`结构体
+
 ```objective-c
 struct objc_object {
     Class isa  OBJC_ISA_AVAILABILITY;
@@ -148,7 +149,7 @@ struct category_t {
 ```
 从上面的`category_t`的结构体中可以看出，分类中可以添加实例方法，类方法，甚至可以实现协议，添加属性，但不可以添加成员变量。
 分类的实现原理是将`category`中的方法，属性，协议数据放在`category_t`结构体中，然后将结构体内的方法列表拷贝到类对象的方法列表中。
-`Category`可以添加属性，但是并不会自动生成成员变量及`set/get`方法。因为`category_t`体中并不存在成员变量。成员变量是存放在实例对象中的，并且编译的那一刻就已经决定好了。而分类是在运行时才去加载的。那么我们就无法在程序运行时将分类的成员变量中添加到实例对象的结构体中。因此分类中不可以添加成员变量。
+`Category`可以添加属性，但是并不会自动生成成员变量及`set/get`方法。因为`category_t`体中并不存在成员变量。成员变量是存放在实例对象中的，并且编译的那一刻就已经决定好了。而分类是在运行时才去加载的。那么我们就无法在程序运行时将分类的成员变量添加到实例对象的结构体中。因此分类中不可以添加成员变量。
 
 - 可以声明属性
 ```objective-c
@@ -297,7 +298,7 @@ struct category_t {
 
 `Method Swizzling`，本质上就是对`IMP`和`SEL`进行交换。也可以对`isa`指针进行交换
 在苹果的官方库里面有一个很有名的技术就用到了这个`Isa Swizzling`，那就是`KVO`
-`KVO`是为了监听一个对象的某个属性值是否发生变化。在属性值发生变化的时候，肯定会调用其`setter`方法。所以`KVO`的本质就是监听对象有没有调用被监听属性对应的`setter`方法。具体实现应该是重写其`setter`方法即可。
+`KVO`是为了监听一个对象的某个属性值是否发生变化。在属性值发生变化的时候，肯定会调用其`setter`方法。所以`KVO`的本质就是监听对象有没有调用被监听属性对应的`setter`方法。具体实是重写其`setter`方法即可。
 
 
 
@@ -359,6 +360,47 @@ isMemberOfClass:确定一个对象是否是当前类的成员.
 ```
 
 `res1`: `isKindOfClass`比较的是A的isa指针是否指向A或其子类。`[NSObject class]`返回self，即`NSObject Class`,它的`isa`指针指向元类`NSObject Meta Class`。则题目为`NSObject`的元类`isa`指针是否指向`NSObject`类。
+元类的isa指针是否指向元类，只有NSObject的isa指向NSObject
 
 
 
+#### 模型字典转换
+
+1. 通过`class_copyIvarList(self, &count)`获取该类的成员属性数组
+
+   ```objective-c
+   id objc = [[self alloc] init];
+   unsigned int count;
+   Ivar *ivarList = class_copyIvarList(self, &count);
+   
+   for (int i = 0; i < count; i++) {
+     Ivar ivar = ivarList[i];
+     // 获取成员属性名
+     NSString *name = [NSString stringWithUTF8String:ivar_getName(ivar)];
+     
+     NSString *key = [name substringFromIndex:1];
+     id value = dict[key];
+   }
+   ```
+
+2. 判断字典中是否存在字典，如果存在，转换为模型
+
+   ```objective-c
+   if ([value isKindOfClass:[NSDictionary class]]) {
+     // 裁剪
+     NSString *type = [NSString stringWithUTF8String:ivar_getTypeEncoding(ivar)];
+     NSRange range = [type rangeOfString:@"\""];
+     type = [type substringFromIndex:range.location + range.length];
+     range = [type rangeOfString:@"\""];
+     type = [type substringToIndex:range.location];
+     // 根据字符串类名生成类对象
+     Class modelClass = NSClassFromString(type);
+     if (modelClass) {
+       value = [modelClass modelWithDict:value];
+     }
+   }
+   ```
+
+   
+
+3. 通过给分类添加一个协议，来实现将数组中的字典转为模型

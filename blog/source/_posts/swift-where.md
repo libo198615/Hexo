@@ -8,7 +8,7 @@ tags:
 
 
 - do catch
-```
+```swift
 enum ExceptionError: Error {
     case httpCode(Int)
 }
@@ -23,7 +23,7 @@ do {
 ```
 
 - switch
-```
+```swift
 var value:(Int, String) = (1, "小明")
 switch value {
     case let (x, y) where x < 60;
@@ -34,13 +34,13 @@ switch value {
 ```
 
 - for
-```
+```swift
 for score in scores where score >= 60 {
     print("及格")
 }
 ```
 - for in
-```
+```swift
 let arrayOne = [1, 2, 3, 4, 5];
 let dictionary = [1:"a", 2:"b"]
 for i in arrayOne where dictionary[i] != nil {
@@ -48,7 +48,7 @@ for i in arrayOne where dictionary[i] != nil {
 }
 ```
 - protocol
-```
+```swift
 protocol aProtocol()
 extension aProtocol where Self: UIView {
     // 只给遵守aProtocol协议的UIView添加拓展
@@ -56,7 +56,7 @@ extension aProtocol where Self: UIView {
 ```
 
 - if let   guard中的where使用 , 替代
-```
+```swift
 var optionName: String? = "hang"
 if let name = optionName , name.hasprefix("H") {
     print(name)
@@ -64,7 +64,7 @@ if let name = optionName , name.hasprefix("H") {
 ```
 
 - Swift4 中的改进
-```
+```swift
 可以在 associatedtype 后面声明的类型后追加 where 约束语句
 
 protocol aProtocol {

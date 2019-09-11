@@ -11,7 +11,7 @@ tags:
 2. 提供多个方法设置图片的`URL`，用户需要则使用带有更多参数的方法，否则会使用默认参数进行调用，但最终调用的是同一个设置方法。同时提供了`SDWebImageOptions`来配置不同的情况。
 3. 调用方法时首先取消当前`UIImageView`上的下载
 `[self sd_cancelImageLoadOperationWithKey:validOperationKey];`
-4. 将当前`UIImageView`和`URL`进行管理
+4. 使用关联将当前`UIImageView`和`URL`进行管理
 `objc_setAssociatedObject(self, &imageURLKey, url, OBJC_ASSOCIATION_RETAIN_NONATOMIC);`
 5. 判断`URL`是否是`faildURL`，如果是，根据传入的`options`参数判断是否需要重新下载，不是则直接返回。`SDWebImage`保存了所有下载失败的`url`
 ```objective-c
@@ -40,6 +40,7 @@ APP退出时删除部分缓存，使缓存总量控制在预设总量的1/2,删�
 
 初始化时注册通知`UIApplicationDidEnterBackgroundNotification`
 取消没有完成的下载，同时执行`UIApplicationWillTerminateNotification`的相关清理工作
+
 ```objective-c
 - (void)backgroundDeleteOldFiles {
     Class UIApplicationClass = NSClassFromString(@"UIApplication");

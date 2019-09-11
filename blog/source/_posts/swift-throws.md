@@ -17,7 +17,7 @@ tags:
 
 #### do-catch
 ---
-```
+```swift
 do {
     try expression
     statements
@@ -56,7 +56,7 @@ func willThrow(_ type:NSInteger)throws -> NSString {
 
 #### try
 ---
-```
+```swift
 // Converting Errors to Optional Values
 
 func someThrowingFunction() throws -> Int {

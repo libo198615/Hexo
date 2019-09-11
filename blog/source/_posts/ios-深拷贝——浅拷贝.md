@@ -130,7 +130,7 @@ tempString:0x6080000795c0 strongString:0x6080000795c0 copyString:0x6080000795c0
 tempString:0x7fff5cb3b738 strongString:0x7fc545d0b6d0 copyString:0x7fc545d0b6c8
 ```
 
-如果我们不用self.点语法，这样就不会调用 getter setter 方法，copy也就不会起作用了
+如果我们不用self.点语法，这样就不会调用 getter setter 方法，copy也就不会起作用了。所以说，系统的属性修饰符，strong copy 等的作用范围是 set get 方法。
 
 ##### mutaleArr 
 

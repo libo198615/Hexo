@@ -26,7 +26,7 @@ tags:
 3. autoreleasePool的析构方法。下面延迟释放有解释
 
 
-##### 如果子线程中没有runloop
+##### 子线程 vs runloop
 
 在子线程你创建了`Pool`的话，产生的 `Autorelease` 对象就会交给 `pool` 去管理。如果你没有创建 `Pool` ，但是产生了 `Autorelease` 对象，就会调用 `autoreleaseNoPage` 方法。在这个方法中，会自动帮你创建一个 `hotpage`（hotPage 可以理解为当前正在使用的 AutoreleasePoolPage）并调用 `page->add(obj)`将对象添加到 `AutoreleasePoolPage` 的栈中
 

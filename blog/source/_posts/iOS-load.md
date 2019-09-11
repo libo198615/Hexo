@@ -65,3 +65,5 @@ load -> main() -> initialize
 ![2](iOS-load/2.png)
 
 ![3](http://ww4.sinaimg.cn/large/006tNc79ly1g4mcrp7gwlj314i0k442b.jpg)
+
+总结：load 和 initialize 总是先调用父方法再调用子方法，而category中的load要根据文件的加载顺序决定先调用父方法还是子方法

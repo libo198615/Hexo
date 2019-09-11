@@ -8,25 +8,30 @@ tags:
 
 ##### 创建方法比较
 
-{% asset_img 1.png 图片说明 %}
+
+
+![](http://ww3.sinaimg.cn/large/006tNc79ly1g5t7fymz9aj30sg0lcmxv.jpg)
+
 如果你想使用`timerWithTimeInterval`或`initWithFireDate`的话, 需要使用`NSRunloop`的以下方法将NSTimer加入到runloop中
 
 ```
 -(void)addTimer:(NSTimer *)aTimer forMode:(NSString *)mode
 ```
 
-{% asset_img 2.png 图片说明 %}
+
+
+![](http://ww3.sinaimg.cn/large/006tNc79ly1g5t7fyjah8j30sg0lcwfn.jpg)
 
 ##### invalide
 
-{% asset_img 3.png 图片说明 %}
+![](http://ww4.sinaimg.cn/large/006tNc79ly1g5t7fyfctoj30sg0lcjs1.jpg)
 
 ##### runloop
 
-是创建NSTimer, 加入到runloop后, 除了ViewController之外iOS系统也会强引用NSTimer对象
-{% asset_img 4.png 图片说明 %}
+创建NSTimer, 加入到runloop后, 除了ViewController之外iOS系统也会强引用NSTimer对象
+![](http://ww4.sinaimg.cn/large/006tNc79ly1g5t7fybgnkj30sg0lc75m.jpg)
 当调用invalidate方法时, 移除runloop后, iOS系统会解除对NSTimer对象的强引用, 当ViewController销毁时, ViewController和NSTimer就都可以释放了
-{% asset_img 5.png 图片说明 %}
+![](http://ww4.sinaimg.cn/large/006tNc79ly1g5t7fy7iubj30sg0lcmyd.jpg)
 
 ##### 销毁
 
@@ -42,12 +47,12 @@ _timer=nil;// 对象置nil是一种规范和习惯
 ##### 循环引用的解决方法
 
 - 将target设置为 weakSelf // 不行
-  同样是`target-action`方式`button`就不会出现循环引用的问题，这是因为`UIControl`的内部做了`weak`操作，即真正持有的时候是`weak`的并没有导致应用计数器加1，而`NSTimer`由于`runloop`的原因并没有做`weak`操作。
+  同样是`target-action`方式`button`就不会出现循环引用的问题，这是因为`UIControl`的内部使用`weak`持有`self`,并没有导致应用计数器加1，而`NSTimer`由于`runloop`的原因并没有做`weak`操作。
 - block
   使用block的形式替换掉原先的“target-selector”方式，打断_timer对于其他对象的引用。
   官方已经在iOS10之后加入了新的api，从而支持了block形式创建timer：
 
-```
+```objective-c
 + (NSTimer *)timerWithTimeInterval:(NSTimeInterval)interval repeats:(BOOL)repeats block:(void (^)(NSTimer *timer))block
 ```
 
@@ -57,68 +62,64 @@ _timer=nil;// 对象置nil是一种规范和习惯
   1.为NSTimer添加一个Category方法
   NSTimer+WeakTimer.h
 
-```
+```objective-c
 + (NSTimer *)wx_scheduledTimerWithTimeInterval:(NSTimeInterval)timeInterval
-repeats:(BOOL)repeats
-handlerBlock:(void(^)())handler;
+																			 repeats:(BOOL)repeats
+																	handlerBlock:(void(^)())handler;
 ```
 
 NSTimer+WeakTimer.m
 
-```
+```objective-c
 + (NSTimer *)wx_scheduledTimerWithTimeInterval:(NSTimeInterval)timeInterval
-repeats:(BOOL)repeats
-handlerBlock:(void(^)())handler
-{
-return [self scheduledTimerWithTimeInterval:timeInterval
-target:self
-selector:@selector(handlerBlockInvoke:)
-userInfo:[handler copy]
-repeats:repeats];
+																			 repeats:(BOOL)repeats
+																  handlerBlock:(void(^)())handler {
+		return [self scheduledTimerWithTimeInterval:timeInterval
+																				 target:self
+																			 selector:@selector(handlerBlockInvoke:)
+																			 userInfo:[handler copy]
+																				repeats:repeats];
 }
 
-+ (void)handlerBlockInvoke:(NSTimer *)timer
-{
-void (^block)() = timer.userInfo;
-if (block) {
-block();
-}
++ (void)handlerBlockInvoke:(NSTimer *)timer {
+		void (^block)() = timer.userInfo;
+		if (block) {
+				block();
+		}
 }
 ```
 
 2.如何使用这个Category方法
 创建一个NSTimer
 
-```
-- (void)startPolling
-{
-__weak typeof(self)weakSelf = self;
-self.timer = [NSTimer zx_scheduledTimerWithTimeInterval:5.0 repeats:YES handlerBlock:^void(void){
-__strong typeof(weakSelf)strongSelf = weakSelf;
-[strongSelf doPolling];
-}];
-}
-执行轮询任务slector
-
-- (void)doPolling
-{
-//Todo...;
-}
-销毁NSTimer对象
-
-- (void)stopPolling
-{
-[self.timer invalidate];
-self.timer = nil;
+```objective-c
+- (void)startPolling {
+		__weak typeof(self)weakSelf = self;
+		self.timer = [NSTimer zx_scheduledTimerWithTimeInterval:5.0 
+                  																	repeats:YES 
+                  														 handlerBlock:^void(void){
+				__strong typeof(weakSelf)strongSelf = weakSelf;
+				[strongSelf doPolling];
+		}];
 }
 
-- (void)dealloc
-{
-[self.timer invalidate];
+// 执行轮询任务slector
+- (void)doPolling {
+		//Todo...;
+}
+
+// 销毁NSTimer对象
+- (void)stopPolling {
+		[self.timer invalidate];
+		self.timer = nil;
+}
+
+- (void)dealloc {
+		[self.timer invalidate];
 }
 ```
 
-计时器现在的targer是NSTimer类对象。这段代码先是定义了个弱引用，令其指向self,然后block捕获这个引用，而不直接去捕获普通的self变量，也就是说self不会为计时器所保留。当block开始执行时，立刻生成strong强引用，以保证实例在执行期间持续存活，不被释放。
+计时器现在的targer是NSTimer类对象。这段代码先是定义了个弱引用，令其指向self,然后block捕获这个引用，而不直接去捕获普通的self变量，也就是说self不会被计时器所保留。当block开始执行时，立刻生成strong强引用，以保证实例在执行期间持续存活，不被释放。
 
 采用这种写法后，外界指向NSTimer的实例最后一个引用被释放后，则创建NSTimer的实例也随之被系统回收。
 

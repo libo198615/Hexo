@@ -26,7 +26,7 @@ tags:
 
 二、进程与线程的资源：
 1、堆与栈
-堆：是大家共有的空间，分全局堆和局部堆。堆在操作系统对进程初始化的时候分配，运行过程中也可以向系统要额外的堆，但是记得用完了要还给操作系统，要不然就是内存泄漏。
+堆：是大家共有的空间，分全局堆和局部堆。堆在操作系统对进程初始化的时候分配，运行过程中也可以向系统申请																												、	额外的堆，但是记得用完了要还给操作系统，要不然就是内存泄漏。
 栈：是各个线程独有的，保存其运行状态和局部自动变量的。栈在线程开始的时候初始化，每个线程的栈互相独立，因此，栈是`thread safe`的。操作系统在切换线程的时候会自动的切换栈，就是切换`ＳＳ／ＥＳＰ`寄存器。栈空间不需要在高级语言里面显式的分配和释放。
 
 ##### 进程通信
@@ -44,7 +44,7 @@ tags:
 - 串行队列：队列中的任务按顺序执行，对应一个线程
 - 并行队列：队列中的任务可以分发给不同的线程同时执行，可以对应多个线程
 
-队列会默认创建新线程
+串行和并行表示任务执行的顺序，同步和异步表示是否创建新的线程
 
 ```objective-c
 NSLog(@"%@",[NSThread currentThread]);
@@ -53,10 +53,12 @@ dispatch_queue_t serialQueue = dispatch_queue_create("serial", NULL);
 dispatch_queue_t concurrentQueue = dispatch_queue_create("concurrent", DISPATCH_QUEUE_CONCURRENT);
 
 dispatch_async(serialQueue, ^{
+  	// 如果是 sync 同步执行，这里还是在当前线程，即主线程中执行
     NSLog(@"%@",[NSThread currentThread]);
 });
 
 dispatch_async(concurrentQueue, ^{
+	  // 如果是 sync 同步执行，这里还是在当前线程，即主线程中执行
     NSLog(@"%@",[NSThread currentThread]);
 });
 ```
@@ -70,8 +72,8 @@ dispatch_async(concurrentQueue, ^{
 
 `GCD`是将任务添加到队列中（串行/并发/主队列），并且制定任务执行的函数（同步/异步），使用简单。不能对某一任务设置优先级，只能设置某一个队列的优先级。
 常用的功能包括 
-一次性执行 `dispatch_once`，
-延迟操作`dispatch_after`（这里是延迟推到线程中，而不是在线程中等待，因此比如设置延迟1秒执行，但是一秒后只是推到了线程中，不会立刻执行），调度组等，
+一次性执行 `dispatch_once`。
+延迟操作`dispatch_after`（这里是延迟推到线程中，而不是在线程中等待，因此比如设置延迟1秒执行，但是一秒后只是推到了线程中，不会立刻执行）。
 `dispatch_barrier_async`栅栏来控制异步操作的顺序
 `dispatch_apply`充分利用多核进行快速迭代遍历
 `dispatch_group_t`队列组，添加到队列组中的任务完成之后会调用`dispatch_group_notify` 函数，可以实现类似A、B两个耗时操作都完成之后，去主线程更新UI的操作
@@ -79,11 +81,19 @@ dispatch_async(concurrentQueue, ^{
 `NSOperation`把操作（异步）添加到队列中（全局的并发队列），是OC框架，更加面向对象，可以随时取消已经设定准备要执行的任务，已经执行的除外，可以设置队列中每一个操作的优先级，其基本功能包括设置最大操作并发数`maxConcurrentOperationCount`，继续/暂停/全部取消，可以对队列设置操作的依赖关系，通过`KVO`监听`NSOperation` 对象的属性，如 `isCancelled`、`isFinished`；对象可重用。
 操作依赖：`[operation2 addDependency:operation1]`;  (`operation2` 依赖于`operation1`的完成，但这两个任务要加入到同一个队列中)
 
+如果只重写`main`方法，底层控制变更任务执行完成状态，以及任务退出。
+
+如果重写了`start`发放，自行控制任务状态。`start`方法源码通过判断任务状态做了相应处理，重写的话相当于抵消了系统的默认实现
+
+系统通过`KVO`移除一个`isFinished = YES`的`NSOperation`
+
+
+
 ##### 同步&异步 串行&并发
 
 - 同步执行
 
-比如这里的`dispatch_sync`，这个函数会把一个`block`加入到指定的队列中，而且会一直等到执行完`blcok`，这个函数才返回。因此在`block`执行完之前，调用`dispatch_sync`方法的线程是阻塞的。
+`dispatch_sync`，这个函数会把一个`block`加入到指定的队列中，而且会一直等到执行完`blcok`，这个函数才返回。
 
 - 异步执行
 
@@ -91,7 +101,7 @@ dispatch_async(concurrentQueue, ^{
 
 - 串行队列
 
-比如这里的`dispatch_get_main_queue`。这个队列中所有任务，一定按照先来后到的顺序执行。对于每一个不同的串行队列，系统会为这个队列建立唯一的线程来执行代码。
+`dispatch_get_main_queue`。这个队列中所有任务，一定按照先来后到的顺序执行。对于每一个不同的串行队列，系统会为这个队列建立唯一的线程来执行代码。也就是说一个串行队列，内部只有一个线程，所有的任务都在这个线程中顺序执行。
 
 - 并发队列
 
@@ -107,7 +117,24 @@ dispatch_async(concurrentQueue, ^{
 ##### 串行队列 
 
 串行队列 异步任务，会创建子线程，且只创建一个子线程，异步任务执行是有序的。 
-串行队列 同步任务，不创建新线程，同步任务执行是有序的。本例在主线程中执行
+串行队列 同步任务，不创建新线程，同步任务执行是有序的。
+
+```objective-c
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    
+    dispatch_sync(dispatch_queue_create("serial", nil), ^{
+        // @"在主队列中同步提交一个任务到一个串行队列，串行队列不创建线程，依然在主线程中执行
+        NSLog(@"%@",[NSThread currentThread]);
+    });
+
+}
+```
+
+
+
+当我们创建一个串行队列queueA。如果我们创建同步任务，queueA不会创建线程，所有的同步任务都在创建queueA的线程中顺序执行；如果我们创建异步任务，queueA会创建一个线程threadA，所有的异步任务都在threadA中顺序执行
+
 ```objective-c
 - (void)test {
 
@@ -260,7 +287,7 @@ done
 
 ##### atomic
 
-`atomic`的作用只是给`getter`和`setter`加了个锁，`atomic`只能保证代码进入`getter`或者`setter`函数内部时是安全的，一旦出了`getter`和`setter`，多线程安全只能靠程序员自己保障了。所以`atomic`属性和使用`property`的多线程安全并没什么直接的联系。另外，`atomic`由于加锁也会带来一些性能损耗，所以我们在编写iOS代码的时候，一般声明`property`为`nonatomic`，在需要做多线程安全的场景，自己去额外加锁做同步。
+`atomic`的作用只是给`getter`和`setter`加了个锁，`atomic`只能保证代码进入`getter`或者`setter`函数内部时是安全的，一旦出了`getter`和`setter`，多线程的安全只能靠程序员自己保障了。所以`atomic`属性和使用`property`的多线程安全并没什么直接的联系。另外，`atomic`由于加锁也会带来一些性能损耗，所以我们在编写iOS代码的时候，一般声明`property`为`nonatomic`，在需要做多线程安全的场景，自己去额外加锁做同步。
 
 
 
@@ -270,6 +297,53 @@ done
 
 信号量的值就相当于剩余车位的数目，
 `dispatch_semaphore_wait`函数就相当于来了一辆车，`dispatch_semaphore_signal`就相当于走了一辆车。停车位的剩余数目在初始化的时候就已经指明了`dispatch_semaphore_create（long value）`。
+
+
+
+`dispatch_semaphore_signal`是发送一个信号，表示释放一个信号量，让信号总量加1，
+`dispatch_semaphore_wait`等待信号，当信号总量少于0的时候就会一直等待，否则就可以正常的执行，并让信号总量-1
+
+```objective-c
+// 创建队列组
+dispatch_group_t group = dispatch_group_create();   
+// 创建信号量，并且设置值为10
+dispatch_semaphore_t semaphore = dispatch_semaphore_create(10);   
+dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);   
+for (int i = 0; i < 100; i++)   
+{   
+    // 由于是异步执行的，所以每次循环Block里面的dispatch_semaphore_signal根本还没有执行就会执行dispatch_semaphore_wait，从而semaphore-1.当循环10此后，semaphore等于0，则会阻塞线程，直到执行了Block的dispatch_semaphore_signal 才会继续执行
+    dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);   
+    dispatch_group_async(group, queue, ^{   
+        NSLog(@"%i",i);   
+        sleep(2);   
+        // 每次发送信号则semaphore会+1，
+        dispatch_semaphore_signal(semaphore);   
+    });   
+}
+
+```
+
+在开发中我们需要等待某个网络回调完之后才执行后面的操作
+
+```objective-c
+_block BOOL isok = NO;  
+
+dispatch_semaphore_t sema = dispatch_semaphore_create(0);  
+Engine *engine = [[Engine alloc] init];  
+[engine queryCompletion:^(BOOL isOpen) {  
+    isok = isOpen;  
+    dispatch_semaphore_signal(sema);  
+} onError:^(int errorCode, NSString *errorMessage) {  
+    isok = NO;  
+    dispatch_semaphore_signal(sema);  
+}];  
+
+dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);  
+// 创建的时候信号量为 0 ，执行到此时要等待
+// todo what you want to do after net callback
+```
+
+
 
 
 
@@ -286,8 +360,8 @@ sync 会等到 后面block 执行完成才返回， sync 又在 dispatch_get_mai
 它是串行队列，sync 是后加入的，前一个是主线程，
 所以 sync 想执行 block 必须等待主线程执行完成，主线程等待 sync 返回，去执行后续内容。
 
-```
-// 这样可以
+```objective-c
+// 这样可以，因为中间有asyn，没有达到在线程A中同步向线程A中添加任务，这里是在线程B中同步向线程A中添加任务
 - (void)viewDidLoad {
     [super viewDidLoad];
 
@@ -303,7 +377,7 @@ sync 会等到 后面block 执行完成才返回， sync 又在 dispatch_get_mai
     });
 }
 ```
-```
+```objective-c
 // 这样可以
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -315,13 +389,14 @@ sync 会等到 后面block 执行完成才返回， sync 又在 dispatch_get_mai
 }
 
 - (void)log {
+  	// 这里是 serialQueue，下面是serialQueue1，没有满足条件
     dispatch_queue_t serialQueue1 = dispatch_queue_create("com.SerialQueue1", NULL);
     dispatch_sync(serialQueue1, ^{
         NSLog(@"momo run");
     });
 }
 ```
-```
+```objective-c
 - (void)viewDidLoad {
     [super viewDidLoad];
 
@@ -367,30 +442,44 @@ work 4 end
 ```
 
 - 同步和异步代表会不会开辟新的线程。串行和并发代表任务执行的方式。
-- 同步串行和同步并发，任务执行的方式是一样的。没有区别，因为没有开辟新的线程，所有的任务都是在一条线程(当前线程)里面执行。
-- 异步串行和异步并发，任务执行的方式是有区别的，异步串行会开辟一条新的线程，队列中所有任务按照添加的顺序一个一个执行，异步并发会开辟多条线程，至于具体开辟多少条线程，是由系统决定的，但是所有的任务好像就是同时执行的一样。
+
+  ```objective-c
+  - (void)viewDidLoad {
+      [super viewDidLoad];
+      
+      dispatch_sync(dispatch_queue_create("serial", nil), ^{
+          // @"在主队列中同步提交一个任务到一个串行队列，串行队列不创建线程，依然在主线程中执行
+          NSLog(@"%@",[NSThread currentThread]);
+      });
+  
+  }
+  ```
+
+  
+#### runloop
+
 
 ```objective-c
-for (int i=0; i<3; i++) {
-    dispatch_async(q, ^{
-        NSLog(@"async--%@  %d",[NSThread currentThread],i);
-        dispatch_sync(q, ^{
-            NSLog(@"sync--%@  %d",[NSThread currentThread],i);
-        });
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    
+    dispatch_async(dispatch_get_global_queue(0, 0), ^{
+        // 在block底层线程池中的某一线程执行，但是没有开启runloop（GCD的子线程不需要手动创建自动释放池）
+        NSLog(@"1");
+        // 当前线程没有runloop，不会执行
+        [self performSelector:@selector(printLog) withObject:nil afterDelay:0];
+        // 没有runloop也会执行
+//        [self performSelector:@selector(printLog)]; // 1 2 3
+        NSLog(@"3");
     });
+
 }
----------
 
-start--<NSThread: 0x282f05a40>{number = 1, name = main}
-end--<NSThread: 0x282f05a40>{number = 1, name = main}
-async--<NSThread: 0x282f54080>{number = 3, name = (null)}  0
-sync--<NSThread: 0x282f54080>{number = 3, name = (null)}  0
-async--<NSThread: 0x282f54080>{number = 3, name = (null)}  1
-sync--<NSThread: 0x282f54080>{number = 3, name = (null)}  1
-async--<NSThread: 0x282f54080>{number = 3, name = (null)}  2
-sync--<NSThread: 0x282f54080>{number = 3, name = (null)}  2
-
+- (void)printLog {
+    NSLog(@"2");
+}
 ```
+
 
 
 ##### 线程间通信
@@ -411,7 +500,7 @@ runloop
 
 - 就绪状态
 
-处于就绪状态的线程并不一定立即运行run()方法，线程还必须同其他线程竞争CPU时间，只有获得CPU时间才可以运行线程。因为在单CPU的计算机系统中，不可能同时运行多个线程，一个时刻仅有一个线程处于运行状态。因此此时可能有多个线程处于就绪状态。对多个处于就绪状态的线程是由Java运行时系统的线程调度程序来调度的。
+处于就绪状态的线程并不一定立即运行run()方法，线程还必须同其他线程竞争CPU时间，只有获得CPU时间才可以运行线程。因为在单CPU的计算机系统中，不可能同时运行多个线程，一个时刻仅有一个线程处于运行状态。因此此时可能有多个线程处于就绪状态。对多个处于就绪状态的线程是由运行时系统的线程调度程序来调度的。
 
 - 运行状态（running）
 

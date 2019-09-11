@@ -23,10 +23,9 @@ tags:
 
 
 
-NSNotification 应该是采用单例模式设计。使用**观察者模式**来实现跨层传递消息。
+NSNotification 应该是采用单例模式设计。
 
-主体应该是一个dictionary，key就是注册通知时的name。value应该是一个数组，里面是所有注册了该通知的数据模型(observer, SEL)
+主体应该是一个dictionary，key就是注册通知时的name。value应该是一个数组（NSHashTable，存储observe的弱引用），里面是所有注册了该通知的数据模型(observer, SEL)，发送通知时遍历此hashtable，如果observe是nil，主动移除
 
 ![](https://ws1.sinaimg.cn/large/006tKfTcly1g1pr2mfw2jj30ly0ezgm5.jpg)
 
-value中的observe要使用week，避免强引用；每次发送通知时，如果observe为nil，主动移除

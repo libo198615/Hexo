@@ -29,7 +29,7 @@ wwdc：
 
 ![](https://ws4.sinaimg.cn/large/006tKfTcly1g1ptb3khufj314r0coabn.jpg)
 
-层是基于绘画模型实现的，层并不会在我们的`app`中做什么事，实际上是层只是捕获`app`所提供的内容，并缓存成`bitmap`，当任何与层关联的属性值发生变化时，`Core Animation`就会将新的`bitmap`传给绘图硬件，并根据新的位图更新显示。
+layer是基于绘画模型实现的，层并不会在我们的`app`中做什么事，实际上layer只是捕获`app`所提供的内容，并缓存成`bitmap`，当任何与层关联的属性值发生变化时，`Core Animation`就会将新的`bitmap`传给绘图硬件，并根据新的位图更新显示。
 
 `UIView`是`iOS`系统中界面元素的基础，所有的界面元素都是继承自`UIView`。它真正的绘图部分，是由一个`CALayer`类来管理。`UIView`本身更像是一个`CALayer`的管理器，访问它的跟绘图和跟坐标有关的属性，例如`frame`、`bounds`等，实际上内部都是在访问它所包含的`CALayer`的相关属性。
 
@@ -74,7 +74,7 @@ view的移动，依靠的是不断的更新view的位置，每次更新完，把
 
 图层在其对应的 view 坐标系中, 或是在对应的父 layer 的坐标系中的大小是通过 bounds 定义的. 但位置是通过如下两个属性共同定义:
 
-- position: 描述的是在父layer坐标系下的一个点.
+- position: 描述的是其锚点在父layer坐标系下的一个位置（点）.
 - anchorPoint: 描述 position 点在 layer 上的位置, 这个位置是相对于 layer 自身的坐标系而言的, 且值为 0 到 1.
 
 这样的定位方式实际就是: 先在 layer 上确定锚点, 然后将锚点挂接到 position 指定的位置上, 就定位了该
@@ -84,3 +84,10 @@ anchorPoint 的默认值是 (0.5, 0.5), 即 layer 的中央位置. 这时 positi
 
 而 layer 的 frame 实际是通过当前的 bounds 和 position 以及 anchorPoint 共同计算出来的. 当设置 layer 的 frame 时, 相当于同时修改了 layer 的 bounds 和 position.
 
+
+
+
+
+
+
+https://mp.weixin.qq.com/s/k9m6eJQXvfSSXhfTnd3goA

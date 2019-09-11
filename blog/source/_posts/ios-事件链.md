@@ -113,9 +113,7 @@ tags:
 关于手势的处理逻辑和这个相同.但是手势的优先级更高.如果父视图有手势.默认优先处理手势事件 可以修改手势的属性`cancelsTouchesInView`为 NO 来同时处理手势和普通触摸事件
 
 
-1、如果最终hit-test没有找到第一响应者，或者第一响应者没有处理该事件(添加view，不做任何处理，不处理touch事件，gesture方法，即为不处理事件)，则该事件会沿着响应者链向上回溯，如果UIWindow实例和UIApplication实例都不能处理该事件，则该事件会被丢弃；
-
-2、hitTest:withEvent:方法将会忽略隐藏(hidden=YES)的视图，禁止用户操作(userInteractionEnabled=YES)的视图，以及alpha级别小于0.01(alpha<0.01)的视图。如果一个子视图的区域超过父视图的bound区域(父视图的clipsToBounds 属性为NO，这样超过父视图bound区域的子视图内容也会显示)，那么正常情况下对子视图在父视图之外区域的触摸操作不会被识别,因为父视图的pointInside:withEvent:方法会返回NO,这样就不会继续向下遍历子视图了。当然，也可以重写pointInside:withEvent:方法来处理这种情况。
+如果最终hit-test没有找到第一响应者，或者第一响应者没有处理该事件(添加view，不做任何处理，不处理touch事件，gesture方法，即为不处理事件)，则该事件会沿着响应者链向上回溯，如果UIWindow实例和UIApplication实例都不能处理该事件，则该事件会被丢弃；
 
 
 
@@ -126,17 +124,6 @@ tags:
 [^_^]: {% asset_img 5.png 图片说明 %}
 
 ![](https://ws2.sinaimg.cn/large/006tKfTcly1g0ul56tdpfj309w0czq4u.jpg)
-
-`iOS`系统在处理事件时，通过`UIApplication`对象和每个`UIWindow`对象的`sendEvent:`方法将事件分发给具体处理此事件的`responder`对象(对于触摸事件为hit-test view,其他事件为first responder),当具体处理此事件的`responder`不处理此事件时,可以通过`responder chain`交给上一级处理。
-
-
-如果`hit-test view`或`first responder`不处理此事件，则将事件传递给其`nextResponder`处理，若有`UIViewController`对象则传递给`UIViewController`，传递给其`superView`。 
-
-如果view的viewController也不处理事件，则viewController将事件传递给其管理view的superView。 
-
-视图层级结构的顶级为UIWindow对象，如果window仍不处理此事件，传递给UIApplication. 
-
-若UIApplication对象不处理此事件，则事件被丢弃。
 
 小结下，使用响应链，能够让一条链上的多个对象对同一事件做出响应。每一个应用有一个响应者链，我们的视图结构是一个N叉树（一个视图可以有多个子视图，一个子视图同一时刻只有一个父视图），而每一个继承自UIResponder的对象都可以在这个N叉树中成为一个节点。当叶节点成为最高响应者的时候，从这个叶节点开始往其父节点开始追溯出一条链，那么对于这一个叶节点来讲，这一条链就是当前的响应者链。响应者链将系统捕获到的UIEvent与UITouch从叶节点层层向上分发，期间可以选择停止分发，也可以继续向上分发。一句话就是事件的传递过程。
 
@@ -202,7 +189,7 @@ yellowView.backgroundColor = UIColor.yellowColor;
 [blueView addSubview:yellowView];
 ```
 
-```
+```objective-c
 @implementation RedView
 
 - (UIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event {
@@ -276,7 +263,7 @@ redView.backgroundColor = UIColor.redColor;
 
 当我们点击白色区域时
 
-```
+```objective-c
 RedView 的hitTest方法被调用
 返回 (null)
 
@@ -286,14 +273,14 @@ BlueView  的hitTest方法被调用
 
 当我们点击红色区域时
 
-```
+```objective-c
 RedView 的hitTest方法被调用
 返回 <RedView: 0x10fd17ac0; frame = (100 100; 100 100); layer = <CALayer: 0x2803f5840>>
 ```
 
 当我们点击蓝色区域时
 
-```
+```objective-c
 RedView 的hitTest方法被调用
 返回 (null)
 
@@ -306,7 +293,7 @@ BlueView  的hitTest方法被调用
 
 当我们点击黄色区域时
 
-```
+```objective-c
 RedView 的hitTest方法被调用
 返回 (null)
 
@@ -323,6 +310,5 @@ BlueView  的hitTest方法被调用
 
 到此我们得出查找顺序：
 
-1. 点击一个view，从主view或window开始，调用他的subView的hitTest方法，调用顺序和view的添加顺序相反(实际是层级的关系，可以理解为后面添加的覆盖在了前面添加的view的上面，虽然他们可能没有交集)；
-2. 某个Aview的hitTest方法有返回值，则再这个view中重复此步骤，同时跳过其他没有遍历的Aview同一级的view；
-3. 从层级方面来说，每添加一个view盖一层楼的话，调用顺序是从楼上向下调用的
+1. 点击一个view，从主view或window开始，调用他的subView的hitTest方法，调用顺序和view的添加顺序相反(实际是层级的关系，可以理解为后面添加的覆盖在了前面添加的view的上面，虽然他们可能没有交集，但是同一层级的view，后添加的会先响应事件)
+2. 某个Aview的hitTest方法有返回值，则在这个view中重复此步骤，同时跳过其他没有遍历的Aview同一级的view。
